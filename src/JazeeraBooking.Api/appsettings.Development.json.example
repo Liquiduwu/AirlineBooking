@@ -1,0 +1,8 @@
+{
+  "ConnectionStrings": {
+    "JazeeraBookingDb": "Server=localhost,1433;Database=JazeeraBookingDb;User Id=sa;Password=CHANGE_ME;TrustServerCertificate=True;"
+  },
+  "Jwt": {
+    "SigningKey": "CHANGE_ME_at-least-32-characters-long-random-secret"
+  }
+}
