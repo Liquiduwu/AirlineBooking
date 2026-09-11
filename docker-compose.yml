@@ -1,7 +1,7 @@
 services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: jazeera-booking-sqlserver
+    container_name: airline-booking-sqlserver
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: "LocalDev#Passw0rd!"
@@ -9,7 +9,7 @@ services:
     ports:
       - "1433:1433"
     volumes:
-      - jazeera-booking-mssql-data:/var/opt/mssql
+      - airline-booking-mssql-data:/var/opt/mssql
     healthcheck:
       test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' || exit 1"]
       interval: 10s
@@ -17,4 +17,4 @@ services:
       retries: 10
 
 volumes:
-  jazeera-booking-mssql-data:
+  airline-booking-mssql-data:

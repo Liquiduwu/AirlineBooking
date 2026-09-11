@@ -7,7 +7,7 @@ where in the code it's addressed, since that reasoning is the actual point of th
 ## API1: Broken Object Level Authorization
 
 Every booking/passenger endpoint requires an authenticated staff JWT (`[Authorize]` on every
-controller in `src/JazeeraBooking.Api/Controllers`). There's no passenger-facing "look up my
+controller in `src/AirlineBooking.Api/Controllers`). There's no passenger-facing "look up my
 booking" endpoint that would need per-object ownership checks - all callers are internal staff
 who are trusted to see any booking, which sidesteps this class of bug entirely rather than
 solving it. A public passenger portal (listed as future work in the README) would need real
@@ -16,7 +16,7 @@ object-level checks (a passenger can only see *their own* booking) before it cou
 ## API2: Broken Authentication
 
 - Passwords hashed with ASP.NET Core Identity's `PasswordHasher<T>` (PBKDF2, random salt,
-  versioned output) - see `JazeeraBooking.Infrastructure/Auth/AuthService.cs`.
+  versioned output) - see `AirlineBooking.Infrastructure/Auth/AuthService.cs`.
 - JWTs are short-lived (60 minutes, configurable via `Jwt:AccessTokenMinutes`) and signed with
   HMAC-SHA256. There is no refresh-token flow yet (documented as future work) - out of scope
   for the agent-facing use case this API targets, where re-login every hour is acceptable.
@@ -94,7 +94,7 @@ enforced twice, deliberately:
    'Confirmed')` (see `BookingConfiguration.cs`) - the actual race-condition guard. If two
    concurrent requests both pass the app-level check before either commits, only one insert
    satisfies the index; the loser's `DbUpdateException` is translated into the same
-   `ConflictException` (see `JazeeraBookingDbContext.SaveChangesAsync`).
+   `ConflictException` (see `AirlineBookingDbContext.SaveChangesAsync`).
 
 ## Dependency management
 

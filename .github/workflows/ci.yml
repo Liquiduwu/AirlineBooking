@@ -22,7 +22,7 @@ jobs:
     name: Build & Test
     # ubuntu-latest ships Docker Engine pre-installed and running, which the integration test
     # suite needs (Testcontainers.MsSql spins up a real SQL Server container per run - see
-    # tests/JazeeraBooking.IntegrationTests/CustomWebApplicationFactory.cs). A windows-latest
+    # tests/AirlineBooking.IntegrationTests/CustomWebApplicationFactory.cs). A windows-latest
     # runner would need a separate Docker/WSL2 setup step to get the same capability.
     runs-on: ubuntu-latest
 
@@ -36,14 +36,14 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore dependencies
-        run: dotnet restore JazeeraBooking.sln
+        run: dotnet restore AirlineBooking.sln
 
       - name: Build (Release)
-        run: dotnet build JazeeraBooking.sln --configuration Release --no-restore
+        run: dotnet build AirlineBooking.sln --configuration Release --no-restore
 
       - name: Test (unit + integration, with coverage)
         run: >
-          dotnet test JazeeraBooking.sln
+          dotnet test AirlineBooking.sln
           --configuration Release
           --no-build
           --collect:"XPlat Code Coverage"
@@ -63,7 +63,7 @@ jobs:
   # Stubbed deploy: this repo doesn't have a paid Azure subscription behind it, so this job
   # documents the shape of the real deploy step (build a container/publish output, push to
   # Azure App Service) without executing it. Wiring it up for real would mean:
-  #   1. `dotnet publish src/JazeeraBooking.Api -c Release -o ./publish`
+  #   1. `dotnet publish src/AirlineBooking.Api -c Release -o ./publish`
   #   2. azure/login@v2 using an OIDC federated credential (no long-lived secret in the repo)
   #   3. azure/webapps-deploy@v3 pointing at the App Service, or push a container image to
   #      Azure Container Registry and update the App Service's image tag

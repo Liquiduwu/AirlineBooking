@@ -6,7 +6,7 @@
 # Project-specific: secrets never committed. appsettings.Development.json
 # holds real local connection strings / JWT signing keys; appsettings.Development.json.example
 # (checked in) documents the shape without real values.
-src/JazeeraBooking.Api/appsettings.Development.json
+src/AirlineBooking.Api/appsettings.Development.json
 
 # dotenv files
 .env

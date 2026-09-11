@@ -1,4 +1,4 @@
-# Jazeera Booking API
+# Airline Booking API
 
 An airline booking & reservation API - a realistic, scoped-down version of the systems an
 airline runs internally for its booking agents. Flight search, seat maps, and the
@@ -6,14 +6,12 @@ hold → confirm/cancel booking lifecycle, built on ASP.NET Core, EF Core, and S
 
 ## Why this exists
 
-This is a portfolio project built while preparing to apply for a Software Developer role at
-Jazeera Airways. The job description is heavily Microsoft-stack (C#, .NET Core, ASP.NET Core,
-SQL Server, EF Core, REST + OpenAPI, GitHub Actions/Azure DevOps CI-CD, automated testing,
-application security) with a stated preference for airline-industry experience. Rather than
-build a generic CRUD demo, this project tries to hit as many of those specific requirements as
-possible in one cohesive repo, with a domain (flights, seats, fares, bookings) that's directly
-relevant to the role - and to double as a learning vehicle, since I came into this without
-prior .NET experience.
+This is a portfolio project demonstrating a realistic Microsoft-stack backend: C#, ASP.NET
+Core, SQL Server, EF Core, REST + OpenAPI, GitHub Actions CI/CD, automated testing, and applied
+security practices. Rather than build a generic CRUD demo, this project models a domain
+(flights, seats, fares, bookings) with real invariants worth getting right - seat
+double-booking, timed holds, load-factor pricing - and doubles as a learning vehicle for .NET
+idioms along the way.
 
 ## What it does
 
@@ -39,10 +37,10 @@ Four-layer, dependency-flows-inward architecture: `Api` depends on `Application`
 
 ```mermaid
 graph TD
-    Api["JazeeraBooking.Api<br/>Controllers, JWT auth, Swagger,<br/>rate limiting, exception handling"]
-    App["JazeeraBooking.Application<br/>Services, DTOs, FluentValidation,<br/>repository &amp; unit-of-work interfaces"]
-    Infra["JazeeraBooking.Infrastructure<br/>EF Core DbContext, repositories,<br/>migrations, JWT issuing, background jobs"]
-    Domain["JazeeraBooking.Domain<br/>Entities, enums - no dependencies"]
+    Api["AirlineBooking.Api<br/>Controllers, JWT auth, Swagger,<br/>rate limiting, exception handling"]
+    App["AirlineBooking.Application<br/>Services, DTOs, FluentValidation,<br/>repository &amp; unit-of-work interfaces"]
+    Infra["AirlineBooking.Infrastructure<br/>EF Core DbContext, repositories,<br/>migrations, JWT issuing, background jobs"]
+    Domain["AirlineBooking.Domain<br/>Entities, enums - no dependencies"]
     DB[(SQL Server)]
 
     Api --> App
@@ -57,10 +55,10 @@ graph TD
 
 | Layer | Responsibility |
 |---|---|
-| `JazeeraBooking.Domain` | Entities (`Flight`, `Seat`, `Booking`, ...) and enums. No framework dependencies at all - this is the one thing every other project can safely depend on. |
-| `JazeeraBooking.Application` | Business logic (`BookingService`, `FlightService`, ...), request/response DTOs, FluentValidation validators, and the *interfaces* for repositories/unit-of-work/auth - Application defines what it needs from persistence without knowing EF Core exists. |
-| `JazeeraBooking.Infrastructure` | Implements those interfaces: the EF Core `DbContext`, Fluent API entity configurations, migrations, repositories, JWT issuing (`AuthService`), and a `BackgroundService` that sweeps expired booking holds. |
-| `JazeeraBooking.Api` | Controllers, JWT Bearer validation, Swagger/OpenAPI, global exception handling, rate limiting - the thinnest layer, wiring the others together. |
+| `AirlineBooking.Domain` | Entities (`Flight`, `Seat`, `Booking`, ...) and enums. No framework dependencies at all - this is the one thing every other project can safely depend on. |
+| `AirlineBooking.Application` | Business logic (`BookingService`, `FlightService`, ...), request/response DTOs, FluentValidation validators, and the *interfaces* for repositories/unit-of-work/auth - Application defines what it needs from persistence without knowing EF Core exists. |
+| `AirlineBooking.Infrastructure` | Implements those interfaces: the EF Core `DbContext`, Fluent API entity configurations, migrations, repositories, JWT issuing (`AuthService`), and a `BackgroundService` that sweeps expired booking holds. |
+| `AirlineBooking.Api` | Controllers, JWT Bearer validation, Swagger/OpenAPI, global exception handling, rate limiting - the thinnest layer, wiring the others together. |
 
 ### Why a repository layer, given EF Core's `DbContext` already *is* a Unit-of-Work/Repository
 
@@ -71,7 +69,7 @@ into services. I added one anyway, for three reasons specific to this project:
 
 1. The brief this project follows explicitly asks for a `Controllers → Services →
    Repositories/EF Core` layered architecture.
-2. It keeps `JazeeraBooking.Application` genuinely EF-Core-agnostic - services depend on
+2. It keeps `AirlineBooking.Application` genuinely EF-Core-agnostic - services depend on
    `IBookingRepository`, not `DbContext`, so the Application layer has zero package reference
    to EF Core at all (verified: it doesn't compile if you try to sneak one in).
 3. It gives the stored-procedure calls (seat availability, fare quoting) a clean seam -
@@ -103,7 +101,7 @@ Enforced twice, deliberately:
    ('Held', 'Confirmed')` (see `BookingConfiguration.cs`) is what actually closes the race: if
    two concurrent hold requests for the same seat both pass check #1 before either commits,
    only one `INSERT` satisfies the index. The loser's `DbUpdateException` is caught in
-   `JazeeraBookingDbContext.SaveChangesAsync` and translated into the same `ConflictException`
+   `AirlineBookingDbContext.SaveChangesAsync` and translated into the same `ConflictException`
    the app-level check throws, so callers can't tell which path caught it.
 
 ### Other decisions worth flagging
@@ -128,7 +126,7 @@ Enforced twice, deliberately:
 - **Testcontainers over EF Core's InMemory provider for integration tests.** InMemory doesn't
   enforce the filtered unique index or run real stored procedures - exactly the two things in
   this codebase most worth testing against something real. See
-  `tests/JazeeraBooking.IntegrationTests/CustomWebApplicationFactory.cs`.
+  `tests/AirlineBooking.IntegrationTests/CustomWebApplicationFactory.cs`.
 
 ## Tech stack
 
@@ -157,7 +155,7 @@ for why that's fine to commit but `appsettings.Development.json` isn't.
 ### 2. Configure local secrets
 
 ```bash
-cp src/JazeeraBooking.Api/appsettings.Development.json.example src/JazeeraBooking.Api/appsettings.Development.json
+cp src/AirlineBooking.Api/appsettings.Development.json.example src/AirlineBooking.Api/appsettings.Development.json
 ```
 
 The example file's connection string and JWT signing key already match the `docker-compose.yml`
@@ -166,7 +164,7 @@ defaults, so no edits are required for local dev.
 ### 3. Run the API
 
 ```bash
-dotnet run --project src/JazeeraBooking.Api
+dotnet run --project src/AirlineBooking.Api
 ```
 
 On first run in the `Development` environment, the app automatically applies pending EF Core
@@ -186,10 +184,10 @@ paste the `accessToken` from `POST /api/auth/login` to call authenticated endpoi
 dotnet test
 ```
 
-- **Unit tests** (`tests/JazeeraBooking.UnitTests`) mock every repository and exercise service
+- **Unit tests** (`tests/AirlineBooking.UnitTests`) mock every repository and exercise service
   logic in isolation - the booking hold/confirm/cancel state machine, seat-ownership
   validation, and FluentValidation rules.
-- **Integration tests** (`tests/JazeeraBooking.IntegrationTests`) spin up a real, disposable
+- **Integration tests** (`tests/AirlineBooking.IntegrationTests`) spin up a real, disposable
   SQL Server via [Testcontainers](https://testcontainers.com/), run migrations against it, and
   drive the full HTTP pipeline (`WebApplicationFactory<Program>`) - including the stored
   procedures and the filtered unique index a mocked test can't verify. Requires Docker to be
@@ -213,6 +211,29 @@ Full interactive docs live in Swagger once the app is running. Summary:
 | `POST /api/bookings/{ref}/cancel` | Any staff | |
 | `GET/POST /api/aircraft`, `GET/POST /api/fare-classes` | Any staff / Admin (POST) | Reference data |
 | `GET /health` | Anonymous | SQL Server connectivity check |
+
+## Frontend
+
+`frontend/` is a booking-agent console for the API - React 19 + TypeScript on Vite, Tailwind
+v4, React Router. Its visual language is deliberately an airport departure/arrivals (Solari
+split-flap) board rather than a generic admin-dashboard template: dark board casing, amber
+"flap" type for the data agents scan fastest (flight numbers, refs, hold countdowns), and a
+signature flip animation (`SplitFlap`) that every status badge runs through when it mounts or
+changes - the same motion a real split-flap display makes settling on a new value.
+
+It covers the full agent workflow: sign in, search flights, pick a seat off a real seat-map
+grid, get a live fare quote, hold it against a passenger (existing or newly created), then
+confirm or cancel from the booking board - plus an Admin-only "Fleet & fares" screen for
+aircraft, fare classes, flight scheduling, and staff onboarding.
+
+```bash
+cd frontend
+npm install
+npm run dev   # http://localhost:5173, proxies to the API at http://localhost:5178/api
+```
+
+The API's `Program.cs` enables CORS for `http://localhost:5173` in `Development` only. Sign in
+with the same seeded admin credentials as Swagger.
 
 ## CI/CD
 
